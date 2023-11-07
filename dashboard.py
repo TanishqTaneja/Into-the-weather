@@ -101,3 +101,6 @@ if selected_page == "Weather Charts":
 if selected_page == "Historical Data":  
 
      st.title('Historical Analysis &nbsp;&nbsp;🌪️')
+
+
+     # commit
