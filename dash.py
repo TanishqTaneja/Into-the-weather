@@ -24,10 +24,10 @@ else:
 
 st.sidebar.header("Choose your filter: ")
 
-available_options = ["Temperature", "Precipitation", "Wind"]
+available_options = ["Temperature", "Precipitation", "Snow"]
 
 # Create a multiselect widget in the sidebar
-selected_options = st.sidebar.multiselect("Line Chart Filters", available_options)
+selected_options = st.sidebar.multiselect("Line Chart Filters", available_options, default=["Temperature"])
 
 # Display the selected options
 
@@ -42,26 +42,65 @@ df_mean_snow_by_year = df1.groupby(df1["Year"])["Total Snow (cm)"].mean().reset_
 
 
 with col1:
-    st.subheader("Mean Temp vs Year ")
-    fig = px.line(df_mean_temp_by_year, x = "Year", y = "Mean Temp (°C)", color_discrete_sequence=["blue"],
-                 template = "seaborn")
+    if not selected_options:
+            st.subheader("Mean Temp vs Year ")
+            fig = px.line(df_mean_temp_by_year, x = "Year", y = "Mean Temp (°C)", color_discrete_sequence=["yellow"],
+                                template = "seaborn")
+        
+            fig.update_xaxes(
+            tick0=df_mean_temp_by_year["Year"].min(),
+            dtick=5,  # Adjust based on your preferences
+
+                )
+            st.plotly_chart(fig,use_container_width=True)
+    else:
     
 
-    if "Precipitation" in selected_options:
-    
-        fig.add_trace(px.line(df_mean_precip_by_year,color_discrete_sequence=["yellow"], x="Year", y="Total Precip (mm)").data[0] )
+            if "Temperature" in selected_options:
 
-    if "Wind" in selected_options:
+                st.subheader("Mean Temp vs Year ")
+                fig = px.line(df_mean_temp_by_year, x = "Year", y = "Mean Temp (°C)", color_discrete_sequence=["yellow"],
+                            template = "seaborn")
+                
+                if "Precipitation" in selected_options:
 
-        fig.add_trace(px.line(df_mean_snow_by_year,color_discrete_sequence=["white"], x="Year", y="Total Snow (cm)").data[0] )
+                    fig.add_trace(px.line(df_mean_precip_by_year,color_discrete_sequence=["blue"], x="Year", y="Total Precip (mm)").data[0] )
 
-    
-    fig.update_xaxes(
-    tick0=df_mean_temp_by_year["Year"].min(),
-    dtick=5,  # Adjust based on your preferences
+                if "Snow" in selected_options:
+                     
+                     fig.add_trace(px.line(df_mean_snow_by_year,color_discrete_sequence=["white"], x="Year", y="Total Snow (cm)").data[0] )
 
-    )
-    st.plotly_chart(fig,use_container_width=True)
+                
+            elif "Precipitation" in selected_options:
+
+
+                st.subheader("Mean Precipitation vs Year ")
+                fig = px.line(df_mean_precip_by_year, x = "Year", y = "Total Precip (mm)", color_discrete_sequence=["blue"],
+                            template = "seaborn")
+                
+                if "Temperature" in selected_options:
+
+                    fig.add_trace(px.line(df_mean_precip_by_year,color_discrete_sequence=["blue"], x="Year", y="Total Precip (mm)").data[0] )
+
+                if "Snow" in selected_options:
+                     
+                     fig.add_trace(px.line(df_mean_snow_by_year,color_discrete_sequence=["white"], x="Year", y="Total Snow (cm)").data[0] )
+
+                
+                    
+            elif "Snow" in selected_options:
+
+                st.subheader("Mean Snow vs Year ")
+                fig = px.line(df_mean_snow_by_year, x = "Year", y = "Total Snow (cm)", color_discrete_sequence=["white"],
+                            template = "seaborn")
+
+            
+            fig.update_xaxes(
+            tick0=df_mean_temp_by_year["Year"].min(),
+            dtick=5,  # Adjust based on your preferences
+
+            )
+            st.plotly_chart(fig,use_container_width=True)
 
 
     
