@@ -1,8 +1,11 @@
 import streamlit as st
 import plotly.express as px
+import geopandas as gpd
 import pandas as pd
+import numpy as np
 import os
 import warnings
+import plotly.graph_objects as go
 warnings.filterwarnings('ignore')
 
 st.set_page_config(page_title="Weather!!!", page_icon=":bar_chart:",layout="wide")
@@ -12,7 +15,13 @@ st.markdown('<style>div.block-container{padding-top:1rem;}</style>',unsafe_allow
 
 
 df = pd.read_csv("/Users/princegill/Documents/VSCode/AIP/Data and other/Daily dataset/daily_weather_data_v6.csv")
-df['Spd of Max Gust (km/h)'] = pd.to_numeric(df['Spd of Max Gust (km/h)'], errors='coerce')
+
+
+df['size_mean'] = (df['Mean Temp (°C)'].abs().round().astype(int))
+
+
+
+#df['Spd of Max Gust (km/h)'] = pd.to_numeric(df['Spd of Max Gust (km/h)'], errors='coerce')
 
 region = st.sidebar.multiselect("Pick your Region", df["Station Name"].unique())
 if not region:
@@ -21,78 +30,81 @@ else:
     df1 = df[df["Station Name"].isin(region)]
 
 
+df_mean_temp_by_year = df1.groupby(df1["Year"])["Mean Temp (°C)"].mean().reset_index()
 
-st.sidebar.header("Choose your filter: ")
+df_max_temp_by_year = df1.groupby(df1["Year"])["Max Temp (°C)"].max().reset_index()
 
-available_options = ["Temperature", "Precipitation", "Snow"]
+df_min_temp_by_year = df1.groupby(df1["Year"])["Min Temp (°C)"].min().reset_index()
 
-# Create a multiselect widget in the sidebar
-selected_options = st.sidebar.multiselect("Line Chart Filters", available_options, default=["Temperature"])
 
-# Display the selected options
+df_mean_precip_by_year = df1.groupby(df1["Year"])["Total Precip (mm)"].mean().reset_index()
+df_mean_snow_by_year = df1.groupby(df1["Year"])["Total Snow (cm)"].mean().reset_index()
 
+
+st.subheader("Mean Temp vs Year ")
+
+
+
+fig = go.Figure()
+
+fig.add_trace(go.Scatter(
+    x=df_max_temp_by_year["Year"],
+    y=df_max_temp_by_year["Max Temp (°C)"],
+    line=dict(color='firebrick', dash='dash'),
+    name='Max Temp'
+    
+))
+
+fig.add_trace(go.Scatter(
+    x=df_mean_temp_by_year["Year"],
+    y=df_mean_temp_by_year["Mean Temp (°C)"],
+    line=dict(color='#F7DC6F', dash='solid',),
+     
+    name='Mean Temp'
+))
+
+fig.add_trace(go.Scatter(
+    x=df_min_temp_by_year["Year"],
+    y=df_min_temp_by_year["Min Temp (°C)"],
+    line=dict(color='lightblue', dash='dash'),
+    name='Min Temp'
+))
+
+# Update layout
+fig.update_layout(
+    title='Average High and Low Temperatures Over Years',
+    xaxis_title='Year',
+    yaxis_title='Temperature (°C)'
+)
+
+# Display the figure using Streamlit
+st.plotly_chart(fig,use_container_width=True)
 
 
 col1, col2 = st.columns((2))
 
 
-df_mean_temp_by_year = df1.groupby(df1["Year"])["Mean Temp (°C)"].mean().reset_index()
-df_mean_precip_by_year = df1.groupby(df1["Year"])["Total Precip (mm)"].mean().reset_index()
-df_mean_snow_by_year = df1.groupby(df1["Year"])["Total Snow (cm)"].mean().reset_index()
-
-
 with col1:
-    if not selected_options:
-            st.subheader("Mean Temp vs Year ")
-            fig = px.line(df_mean_temp_by_year, x = "Year", y = "Mean Temp (°C)", color_discrete_sequence=["yellow"],
-                                template = "seaborn")
-        
+
+            st.subheader("Mean Rain vs Year ")
+            fig = px.line(df_mean_precip_by_year, x = "Year", y = "Total Precip (mm)", color_discrete_sequence=["#2C479D"],
+                            template = "seaborn",markers=True)
+            
+
             fig.update_xaxes(
             tick0=df_mean_temp_by_year["Year"].min(),
             dtick=5,  # Adjust based on your preferences
 
-                )
+            )
             st.plotly_chart(fig,use_container_width=True)
-    else:
-    
-
-            if "Temperature" in selected_options:
-
-                st.subheader("Mean Temp vs Year ")
-                fig = px.line(df_mean_temp_by_year, x = "Year", y = "Mean Temp (°C)", color_discrete_sequence=["yellow"],
-                            template = "seaborn")
                 
-                if "Precipitation" in selected_options:
-
-                    fig.add_trace(px.line(df_mean_precip_by_year,color_discrete_sequence=["blue"], x="Year", y="Total Precip (mm)").data[0] )
-
-                if "Snow" in selected_options:
                      
-                     fig.add_trace(px.line(df_mean_snow_by_year,color_discrete_sequence=["white"], x="Year", y="Total Snow (cm)").data[0] )
-
+with col2:
                 
-            elif "Precipitation" in selected_options:
 
-
-                st.subheader("Mean Precipitation vs Year ")
-                fig = px.line(df_mean_precip_by_year, x = "Year", y = "Total Precip (mm)", color_discrete_sequence=["blue"],
-                            template = "seaborn")
-                
-                if "Temperature" in selected_options:
-
-                    fig.add_trace(px.line(df_mean_precip_by_year,color_discrete_sequence=["blue"], x="Year", y="Total Precip (mm)").data[0] )
-
-                if "Snow" in selected_options:
-                     
-                     fig.add_trace(px.line(df_mean_snow_by_year,color_discrete_sequence=["white"], x="Year", y="Total Snow (cm)").data[0] )
-
-                
-                    
-            elif "Snow" in selected_options:
-
-                st.subheader("Mean Snow vs Year ")
-                fig = px.line(df_mean_snow_by_year, x = "Year", y = "Total Snow (cm)", color_discrete_sequence=["white"],
-                            template = "seaborn")
+            st.subheader("Mean Snow vs Year ")
+            fig = px.line(df_mean_snow_by_year, x = "Year", y = "Total Snow (cm)", color_discrete_sequence=["white"],
+                            template = "seaborn",markers=True)
 
             
             fig.update_xaxes(
@@ -102,125 +114,75 @@ with col1:
             )
             st.plotly_chart(fig,use_container_width=True)
 
+st.map(df,
+    latitude='Latitude',
+    longitude='Longitude',
+    size='size_mean'*100,
+    #color='size_mean'
+    )
+            
 
+col1, col2 = st.columns((2))
+
+with col1:
+
+    # Identify top five years with the highest mean temperature
+    top_five_years = df_mean_precip_by_year.nlargest(5, "Total Precip (mm)")
+
+    bottom_five_years = df_mean_precip_by_year.nsmallest(5, "Total Precip (mm)")
+
+    # Assign colors to differentiate between top and bottom years
+    top_color = "highest"
+    bottom_color = "lowest"
+
+    # Combine both top and bottom five years with assigned colors
+    top_five_years["Color"] = top_color
+    bottom_five_years["Color"] = bottom_color
+    combined_years = pd.concat([top_five_years, bottom_five_years], ignore_index=True)
+
+    combined_years['Year'] = combined_years['Year'].astype(str)
+
+    st.subheader("Years with Highest And Lowest Mean Percipitation ")
+    fig = px.bar(combined_years,
+                 x = "Year", 
+                 y = "Total Precip (mm)",
+                 color="Color", 
+                 template = "seaborn",
+                 color_discrete_map={"highest": "#FF9633", "lowest": "#3371FF"}, 
+
+                 )
     
-
-df_mean_temp_by_year = df1.groupby(df1["Year"])["Mean Temp (°C)"].mean().reset_index()
-
-# Identify top five years with the highest mean temperature
-top_five_years = df_mean_temp_by_year.nlargest(5, "Mean Temp (°C)")
-
-bottom_five_years = df_mean_temp_by_year.nsmallest(5, "Mean Temp (°C)")
-
-# Assign colors to differentiate between top and bottom years
-top_color = "highest"
-bottom_color = "lowest"
-
-# Combine both top and bottom five years with assigned colors
-top_five_years["Color"] = top_color
-bottom_five_years["Color"] = bottom_color
-combined_years = pd.concat([top_five_years, bottom_five_years], ignore_index=True)
-
+    fig.update_traces(marker=dict(line=dict(width=0.2)))
+    st.plotly_chart(fig,use_container_width=True,height=400)
 
 with col2:   
 
 
-    st.subheader("Years with Highest And Lowest Mean Temperature ")
+    # Identify top five years with the highest mean temperature
+    top_five_years = df_mean_snow_by_year.nlargest(5, "Total Snow (cm)")
+
+    bottom_five_years = df_mean_snow_by_year.nsmallest(5, "Total Snow (cm)")
+
+    # Assign colors to differentiate between top and bottom years
+    top_color = "highest"
+    bottom_color = "lowest"
+
+    # Combine both top and bottom five years with assigned colors
+    top_five_years["Color"] = top_color
+    bottom_five_years["Color"] = bottom_color
+    combined_years = pd.concat([top_five_years, bottom_five_years], ignore_index=True)
+
+    combined_years['Year'] = combined_years['Year'].astype(str)
+
+    st.subheader("Years with Highest And Lowest Mean Snow Fall ")
     fig = px.bar(combined_years,
                  x = "Year", 
-                 y = "Mean Temp (°C)",
+                 y = "Total Snow (cm)",
                  color="Color", 
                  template = "seaborn",
                  color_discrete_map={"highest": "#FF9633", "lowest": "#3371FF"}, 
-                 
+
                  )
     
-    
-    fig.update_xaxes(
-
-        tickvals=combined_years["Year"],
-        tickangle=45,
-        
-
-   )
-    
-    st.plotly_chart(fig,use_container_width=True)
-
-
-
-'''
-cl1, cl2 = st.columns((2))
-with cl1:
-    with st.expander("Category_ViewData"):
-        st.write(category_df.style.background_gradient(cmap="Blues"))
-        csv = category_df.to_csv(index = False).encode('utf-8')
-        st.download_button("Download Data", data = csv, file_name = "Category.csv", mime = "text/csv",
-                            help = 'Click here to download the data as a CSV file')
-
-with cl2:
-    with st.expander("Region_ViewData"):
-        region = filtered_df.groupby(by = "Region", as_index = False)["Sales"].sum()
-        st.write(region.style.background_gradient(cmap="Oranges"))
-        csv = region.to_csv(index = False).encode('utf-8')
-        st.download_button("Download Data", data = csv, file_name = "Region.csv", mime = "text/csv",
-                        help = 'Click here to download the data as a CSV file')
-        
-filtered_df["month_year"] = filtered_df["Order Date"].dt.to_period("M")
-st.subheader('Time Series Analysis')
-
-linechart = pd.DataFrame(filtered_df.groupby(filtered_df["month_year"].dt.strftime("%Y : %b"))["Sales"].sum()).reset_index()
-fig2 = px.line(linechart, x = "month_year", y="Sales", labels = {"Sales": "Amount"},height=500, width = 1000,template="gridon")
-st.plotly_chart(fig2,use_container_width=True)
-
-with st.expander("View Data of TimeSeries:"):
-    st.write(linechart.T.style.background_gradient(cmap="Blues"))
-    csv = linechart.to_csv(index=False).encode("utf-8")
-    st.download_button('Download Data', data = csv, file_name = "TimeSeries.csv", mime ='text/csv')
-
-# Create a treem based on Region, category, sub-Category
-st.subheader("Hierarchical view of Sales using TreeMap")
-fig3 = px.treemap(filtered_df, path = ["Region","Category","Sub-Category"], values = "Sales",hover_data = ["Sales"],
-                  color = "Sub-Category")
-fig3.update_layout(width = 800, height = 650)
-st.plotly_chart(fig3, use_container_width=True)
-
-chart1, chart2 = st.columns((2))
-with chart1:
-    st.subheader('Segment wise Sales')
-    fig = px.pie(filtered_df, values = "Sales", names = "Segment", template = "plotly_dark")
-    fig.update_traces(text = filtered_df["Segment"], textposition = "inside")
-    st.plotly_chart(fig,use_container_width=True)
-
-with chart2:
-    st.subheader('Category wise Sales')
-    fig = px.pie(filtered_df, values = "Sales", names = "Category", template = "gridon")
-    fig.update_traces(text = filtered_df["Category"], textposition = "inside")
-    st.plotly_chart(fig,use_container_width=True)
-
-import plotly.figure_factory as ff
-st.subheader(":point_right: Month wise Sub-Category Sales Summary")
-with st.expander("Summary_Table"):
-    df_sample = df[0:5][["Region","State","City","Category","Sales","Profit","Quantity"]]
-    fig = ff.create_table(df_sample, colorscale = "Cividis")
-    st.plotly_chart(fig, use_container_width=True)
-
-    st.markdown("Month wise sub-Category Table")
-    filtered_df["month"] = filtered_df["Order Date"].dt.month_name()
-    sub_category_Year = pd.pivot_table(data = filtered_df, values = "Sales", index = ["Sub-Category"],columns = "month")
-    st.write(sub_category_Year.style.background_gradient(cmap="Blues"))
-
-# Create a scatter plot
-data1 = px.scatter(filtered_df, x = "Sales", y = "Profit", size = "Quantity")
-data1['layout'].update(title="Relationship between Sales and Profits using Scatter Plot.",
-                       titlefont = dict(size=20),xaxis = dict(title="Sales",titlefont=dict(size=19)),
-                       yaxis = dict(title = "Profit", titlefont = dict(size=19)))
-st.plotly_chart(data1,use_container_width=True)
-
-with st.expander("View Data"):
-    st.write(filtered_df.iloc[:500,1:20:2].style.background_gradient(cmap="Oranges"))
-
-# Download orginal DataSet
-csv = df.to_csv(index = False).encode('utf-8')
-st.download_button('Download Data', data = csv, file_name = "Data.csv",mime = "text/csv")
-
-'''
+    fig.update_traces(marker=dict(line=dict(width=0.2)))
+    st.plotly_chart(fig,use_container_width=True,height=400)
