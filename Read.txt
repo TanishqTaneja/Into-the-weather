@@ -1,2 +1,8 @@
 Welcome
+<<<<<<< HEAD
 2
+=======
+test2
+
+test push
+>>>>>>> dev
