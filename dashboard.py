@@ -17,7 +17,7 @@ if selected_page == "Current Weather":
 st.sidebar.header("Weather Dashboard")
 selected_page = st.sidebar.radio("Select a Page", ["Forcast", "Climate Change", "Extreme"])
 
-if selected_page == "Forcast":
+if selected_page == "Forcast":  ### Tanishq - Spelling is wrong
 >>>>>>> dev
 
         st.title('Into The Weather &nbsp;&nbsp;🌦️')
