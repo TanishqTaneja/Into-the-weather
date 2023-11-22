@@ -2,15 +2,6 @@ import numpy as np
 import pandas as pd
 import streamlit as st
 import plotly.express as px
-<<<<<<< HEAD
-import datetime
-
-# Sidebar for navigation
-st.sidebar.header("Weather Dashboard")
-selected_page = st.sidebar.radio("Select a Page", ["Current Weather", "Weather Charts", "Historical Data"])
-
-if selected_page == "Current Weather":
-=======
 
 
 # Sidebar for navigation
@@ -18,7 +9,6 @@ st.sidebar.header("Weather Dashboard")
 selected_page = st.sidebar.radio("Select a Page", ["Forcast", "Climate Change", "Extreme"])
 
 if selected_page == "Forcast":  ### Tanishq - Spelling is wrong
->>>>>>> dev
 
         st.title('Into The Weather &nbsp;&nbsp;🌦️')
         st.write(" ")
@@ -104,18 +94,6 @@ if selected_page == "Forcast":  ### Tanishq - Spelling is wrong
             st.write('Submit to Get chart analysis')
 
 
-<<<<<<< HEAD
-if selected_page == "Weather Charts":
-     
-     st.title('Weather Charts &nbsp;&nbsp;📈')
-     
-if selected_page == "Historical Data":  
-
-     st.title('Historical Analysis &nbsp;&nbsp;🌪️')
-
-
-     # commit
-=======
 if selected_page == "Climate Change":
      
      st.title('☃️&nbsp;&nbsp;Climate Change &nbsp;&nbsp;☀️')
@@ -123,4 +101,3 @@ if selected_page == "Climate Change":
 if selected_page == "Extreme":  
 
      st.title('❄️ Extreme Weather Analysis &nbsp;&nbsp;🌊')
->>>>>>> dev
