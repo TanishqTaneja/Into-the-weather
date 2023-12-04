@@ -18,7 +18,6 @@ stID = {
         3987: ['ARMSTRONG (AUT)', 1953, 2023],
         5126: ['TRENTON A', 1953, 2023],
         2832: ['COLD LAKE A', 1954, 2023],
-        1739: ['CAPE DYER', 1955, 2023],
         1633: ['CAPE PARRY A', 1956, 2023],
         3649: ['PILOT MOUND (AUT)', 1957, 2023],
         1556: ['HAINES JUNCTION', 1960, 2023]
@@ -80,7 +79,7 @@ for stationID, j in stID.items():#{155: ['COMOX A', 1953, 2023]}.items():
         frames['Date/Time'] = pd.to_datetime(frames['Date/Time'], format='%Y-%m-%d')
         frames.sort_values('Date/Time', ignore_index=True)
 
-        frames.to_csv(fpath)
+        frames.to_csv(fpath, index=False)
 
         weather_data = pd.concat([weather_data,frames])
         print("\t\t\t\tFinal weather Dataframe Shape\t\t:", weather_data.shape)
