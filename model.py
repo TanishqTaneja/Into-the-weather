@@ -105,9 +105,10 @@ for stationID, j in stID.items():#155: ['COMOX A', 1953, 2023], 6781: ['HOPEDALE
 #         display(zz)
         zzz = pd.concat([zzz, zz], ignore_index=True)
     
-    zzz = zzz.groupby(by=['Longitude (x)', 'Latitude (y)', 'Station Name', 'Date/Time']).mean().reset_index()
-    
     zzz['Latitude (y)'] = data['Latitude (y)'].mode()[0]
     zzz['Longitude (x)'] = data['Longitude (x)'].mode()[0]
+
+    zzz = zzz.groupby(by=['Longitude (x)', 'Latitude (y)', 'Station Name', 'Date/Time']).mean().reset_index()
+
     os.makedirs('forecast/', exist_ok =True)
     zzz.to_csv(f'forecast/forecast_{j[0]}_{stationID}.csv', index=False)
