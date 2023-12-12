@@ -7,7 +7,6 @@ import tensorflow as tf
 from tensorflow import keras
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler
-from tensorflow.keras import layers
 
 from datetime import datetime, timedelta
 from sklearn.metrics import r2_score, mean_squared_error
