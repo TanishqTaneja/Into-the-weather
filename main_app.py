@@ -1,3 +1,4 @@
+from datetime import datetime
 import numpy as np
 import pandas as pd
 import streamlit as st
@@ -18,12 +19,12 @@ st.set_page_config(page_title="Weather!!!", page_icon=":bar_chart:", layout="wid
 # Sidebar for navigation
 
 st.sidebar.header("Weather Dashboard")
-selected_page = st.sidebar.radio("Select a Page", ["Forcast", "Weather Analytics", "Extreme"])
+selected_page = st.sidebar.radio("Select a Page", ["Forecast", "Weather Analytics","About"])
 
-if selected_page == "Forcast":
+if selected_page == "Forecast":
         
 
-        ot = pd.read_csv("/Users/princegill/Documents/VSCode/AIP/comox pred full.csv")
+        ot = pd.read_csv("comox pred full.csv")
         ot['Date/Time'] = pd.to_datetime(ot['Date/Time'], format="%d-%m-%Y")
 
         st.title('Into The Weather &nbsp;&nbsp;🌦️')
@@ -33,92 +34,166 @@ if selected_page == "Forcast":
         st.write(" ")
         st.write(" ")
 
-        option = st.selectbox('Select Your City', ('No City Selected', ot["Station Name"].unique()))
-        st.write('You selected:', option)
-        st.write(" ")
-        st.write(" ")
-        st.write(" ")
+        station_names = ['No City Selected'] + ot["Station Name"].unique().tolist()
 
-        if option != 'No City Selected':
-            # Replace with actual data retrieval
-            temperature_data = '☀️'  # Replace with actual temperature data
-            snow_data = '❄️'  # Replace with actual snow data
-            rain_data = '⛈️' # Replace with actual rain data
-
-            col1, col2, col3 = st.columns(3)
-            col1.metric("Temperature", f"{temperature_data} °F", "☀️ °F")
-            col2.metric("Snow", f"{snow_data}%", "❄️%")
-            col3.metric("Rain", f"{rain_data}%", "⛈️%")
-
-        else:
-            temperature_data = 'NULL'  # Replace with actual temperature data
-            snow_data = 'NULL'  # Replace with actual snow data
-            rain_data = 'NULL'  # Replace with actual rain data
-
-            col1, col2, col3 = st.columns(3)
-            col1.metric("Temperature", f"{temperature_data} °F", "Null")
-            col2.metric("Snow", f"{snow_data}%", "Null")
-            col3.metric("Rain", f"{rain_data}%", "Null")
-
-        st.write(" ")
-        st.write(" ")
+        # Create a select box with options for each station name
+        option = st.selectbox('Select Your City', station_names)
+        
+        
         st.write(" ")
 
-        d1 = st.date_input("Select the Date", value=None)
-        st.write("Start Date:", d1) 
+        if option == 'No City Selected':
+              st.warning(" PLease select the valid city first ")
 
-        ot1 = ot[ot['Date/Time'] == str(d1)]
-       
-        st.write(" ")
+        else :
+                
 
-        st.write(" ")
+                st.write('You selected:', option)
 
-        max_temp = str( [ot1["Mean Temp (°C)"]])
-        print(max_temp)
+                ot = ot[ot["Station Name"]== option]
+                
+                 
 
-        if st.button('SUBMIT'):
-            
-            temperature_data = ot1["Mean Temp (°C)"].tolist()[0]
-            snow_data = ot1["Total Snow (cm)"].tolist()[0]   #    Replace with actual snow data
-            rain_data = ot1["Total Rain (mm)"].tolist()[0] # Replace with actual rain data
+                d1 = st.date_input("Select the Date", value=None)
+                st.write("Start Date:", d1) 
 
-            col1, col2, col3 = st.columns(3)
-            col1.metric("Temperature", f"{temperature_data:.1f} °F", "☀️")
-            col2.metric("Snow", f"{snow_data:.1f}%", "❄️")
-            col3.metric("Rain", f"{rain_data:.1f}%", "⛈️")
+                if d1 is None:
+                    st.warning(" PLease select the valid date first ")
+                    
+                else:
+                    
+                        d2 = datetime.strptime("2024-11-13", "%Y-%m-%d").date()
+
+                        if(d1 < d2):
+                            
+
+                                ot1 = ot[ot['Date/Time'] == str(d1)]
+                            
+                                st.write(" ")
+
+                                st.write(" ")
+
+                                max_temp = str( [ot1["Mean Temp (°C)"]])
+                                print(max_temp)
+
+
+                                
+                                st.write(" ")
+                                st.write(" ")
+
+                                if st.button('SUBMIT'):
+
+                                    st.write(" ")
+                                    st.write(" ")
+                                    st.write(" ")
+
+                                    st.subheader ('Weather Predictions 🌥️')
+
+                                    st.write(" ")
+                                    st.write(" ")
+                                    st.write(" ")
+                                    st.write(" ")
+                                    
+                                    temperature_data = ot1["Mean Temp (°C)"].tolist()[0]
+                                    maximum_temp = ot1["Max Temp (°C)"].tolist()[0]  
+                                    minimum_temp = ot1["Min Temp (°C)"].tolist()[0]
+                                    rain_data = ot1["Total Rain (mm)"].tolist()[0] 
+
+                                    col1, col2, col3, col4 = st.columns(4)
+                                    col1.metric("Average Temperature", f"{temperature_data:.1f} °C", "☀️")
+                                    col2.metric("Maximum Temperature", f"{maximum_temp:.1f}°C", "🌞")
+                                    col3.metric("Minimum Temperature", f"{minimum_temp:.1f}°C", "🌞")
+                                    col4.metric("Rain", f"{rain_data:.1f} mm", "⛈️")
+
+                                    st.write(" ")
+                                    st.write(" ")
+                                    st.write(" ")
+
+                                    # Display weather-related information
+                                    if temperature_data > 30:
+                                        st.warning("🔥 High temperature alert! It's going to be a hot day.")
+                                    elif 10 <= temperature_data <= 30:
+                                        st.info("☀️ Moderate temperature. Enjoy the pleasant weather.")
+                                    else:
+                                        st.info("❄️ Cooler temperatures expected. Don't forget your jacket.")
+
+                                    # Check for rain conditions
+                                    if rain_data > 0:
+                                        st.info(f"☔ Rainfall expected: {rain_data:.1f} mm. Don't forget your umbrella!")
+                                    else:
+                                        st.success("🌧️ No rain expected. Enjoy a dry day!")
+
+                                    start_date = pd.to_datetime(d1)  
+
+                        # Calculate the end date as the start date plus 15 days
+                                    end_date = start_date + pd.Timedelta(days=15)
+
+                                    
+
+                        # Filter the DataFrame based on the date range
+                                    filtered_df = ot[(ot['Date/Time'] >= start_date) & (ot['Date/Time'] <= end_date)]
+                                    
+                                    st.write(" ")
+                                    st.write(" ")
+                        
+                                    fig = go.Figure()
+
+                                    fig.add_trace(go.Scatter(
+                                    x=filtered_df["Date/Time"],
+                                    y=filtered_df["Max Temp (°C)"],
+                                    line=dict(color='#DE3163', dash='dot'),
+                                    name='Max Temp'
+                                    
+                                ))
+
+                                    fig.add_trace(go.Scatter(
+                                    x=filtered_df["Date/Time"],
+                                    y=filtered_df["Mean Temp (°C)"],
+                                    line=dict(color='#FF7F50', dash='solid'),
+                                    name='Mean Temp'
+                                    
+                                ))
+                                    
+
+                                    fig.add_trace(go.Scatter(
+                                    x=filtered_df["Date/Time"],
+                                    y=filtered_df["Min Temp (°C)"],
+                                    line=dict(color='#5DADE2', dash='dot'),
+                                    name='Min Temp'
+                                    
+                                ))
+                                    st.write(" ")
+                                    st.write(" ")
+                                    st.write(" ")
+                            
+                                    st.subheader ('Temperature Prediction Chart')
+                                    fig.update_layout(
+                                    #st.subheader ('Temperature Predictions'),
+                                    xaxis_title='Year',
+                                    yaxis_title='Temperature (°C)'
+                                )
+
+                                # Display the figure using Streamlit
+                                    st.plotly_chart(fig,use_container_width=True)
 
 
 
-            start_date = pd.to_datetime(d1)  # Replace with your desired start date
+                                    st.subheader(" Rain Prediction Chart ")
+                                    fig = px.line(filtered_df, x = "Date/Time", y = "Total Rain (mm)", color_discrete_sequence=["#2C479D"],
+                                                    template = "seaborn",markers=True)
+                                    
 
-# Calculate the end date as the start date plus 15 days
-            end_date = start_date + pd.Timedelta(days=15)
+                                    fig.update_xaxes(
+                                    tick0=filtered_df["Date/Time"].min(),
+                                    #dtick=5,  # Adjust based on your preferences
 
-            
+                                    )
+                                    st.plotly_chart(fig,use_container_width=True)
 
-# Filter the DataFrame based on the date range
-            filtered_df = ot[(ot['Date/Time'] >= start_date) & (ot['Date/Time'] <= end_date)]
-            
-            #st.write(filtered_df)
+                        else:
 
-            fig = go.Figure()
-
-            fig.add_trace(go.Scatter(
-            x=filtered_df["Date/Time"],
-            y=filtered_df["Max Temp (°C)"],
-            line=dict(color='firebrick', dash='dash'),
-            name='Max Temp'
-            
-        ))
-            fig.update_layout(
-            title='Average High and Low Temperatures Over Years',
-            xaxis_title='Year',
-            yaxis_title='Temperature (°C)'
-        )
-
-        # Display the figure using Streamlit
-            st.plotly_chart(fig,use_container_width=True)
-
+                            st.warning("Please note that our forecast model has limitations, and predictions beyond one year may not be accurate. We recommend using short-term forecasts for better reliability.")
+                    
         
 # Page 2            
 
@@ -131,7 +206,7 @@ elif selected_page == "Weather Analytics":
         st.markdown('<style>div.block-container{padding-top:1rem;}</style>',unsafe_allow_html=True)
 
 
-        df = pd.read_csv("/Users/princegill/Documents/VSCode/AIP/Data and other/Daily dataset/daily_weather_data_v6.csv")
+        df = pd.read_csv("daily_weather_data_v6.csv")
 
 
         df['size_mean'] = (df['Mean Temp (°C)'].abs().round().astype(int))
@@ -223,7 +298,7 @@ elif selected_page == "Weather Analytics":
                         
 
                     st.subheader("Mean Snow vs Year ")
-                    fig = px.line(df_mean_snow_by_year, x = "Year", y = "Total Snow (cm)", color_discrete_sequence=["white"],
+                    fig = px.line(df_mean_snow_by_year, x = "Year", y = "Total Snow (cm)", color_discrete_sequence=["yellow"],
                                     template = "seaborn",markers=True)
 
                     
@@ -237,7 +312,7 @@ elif selected_page == "Weather Analytics":
         st.map(df,
             latitude='Latitude',
             longitude='Longitude',
-            size='size_mean'*100,
+            size='size_mean'*1000,
             #color='size_mean'
             )
                     
@@ -307,9 +382,83 @@ elif selected_page == "Weather Analytics":
             fig.update_traces(marker=dict(line=dict(width=0.2)))
             st.plotly_chart(fig,use_container_width=True,height=400)
 
-# Page 3
 
-elif selected_page == "Extreme":  
+elif selected_page == "About":  
 
-     st.title('❄️ Extreme Weather Analysis &nbsp;&nbsp;🌊')
-     
+
+    st.title("About Our Team")
+    
+    st.write(
+        "Welcome to the About page! Here, we'll introduce you to the amazing individuals who make up our team."
+    )
+    
+    st.header("Meet the Team", divider="grey")
+    st.write("---")
+    st.header("", divider="rainbow")
+    st.write(" ")
+    st.write(" ")
+    
+    team_members = [
+        {
+            "name": "Marco",
+            "role": "Team Lead",
+            "bio": "Organized and guided team efforts, ensuring collaboration and efficient implementation of data-driven solutions.",
+            "contact": "Email: marconinaflores@loyalistcollege.com",
+            "photo_url": "marco.png",
+        },
+        {
+            "name": "Surya",
+            "role": "Data Scientist",
+            "bio": "Developed architecture, selected data sources, created forecasting models.",
+            "contact": "LinkedIn: https://www.linkedin.com/in/suryabansal1995",
+            "photo_url": "surya.jpeg",
+        },
+        {
+            "name": "Parminder",
+            "role": "UI/UX Developer & Deployment Specialist",
+            "bio": "Deployed web applications and led UI/UX design initiatives, seamlessly merging development and deployment processes. Adept at crafting visually appealing interfaces, gathering user feedback, and ensuring optimal performance.",
+            "contact": "Email: parmindersinghgil@loyalistcollege.com",
+            "photo_url": "gill.png",
+        },
+        {
+            "name": "Barinder",
+            "role": "Data Scientist jr",
+            "bio": "Hourly Data fetching through API and Pre Processing the data with integration with LSTM model. Optimizing the Results for Achieving more Accurate results in Terms of Loss and Sparse Categorical Entropy. Dealing with Extreme Weather conditions.",
+            "contact":"barindersingh2@loyalistcollege.com",
+            "photo_url": "bari.png",
+        },
+        {
+            "name": "Manpreet",
+            "role": "Documentation",
+            "bio": "Helped the team stay organized and on track by providing a clear understanding of the progress of the project.",
+            "contact": "Email: manpreetkaur115@loyalistcollege.com",
+            "photo_url": "mano.png",
+        },
+        {
+            "name": "Tanishq",
+            "role": "Tester & GitHub Repository Manager",
+            "bio": "Ensures accuracy by validating data sources and verifying the precision of forecasting algorithms through rigorous testing  protocols and maintained the repository throughout the project.",
+            "contact":"Tanishqtaneja@loyalistcollege.com",
+            "photo_url": "tanu.png",
+        },
+    ]
+    
+    for member in team_members:
+        col1, col2 = st.columns((2, 1))
+        with col1:
+            st.subheader(member["name"])
+            st.write(f"**Role:** {member['role']}")
+            st.write(member["bio"])
+            st.write(member["contact"])
+    
+        with col2:
+            st.image(member["photo_url"], caption=f"{member['name']} - {member['role']}", use_column_width=False, width=300)
+
+    
+        # Add more information as needed, such as images, social media links, etc.
+    
+        st.subheader(" ", divider='rainbow')
+    
+    
+    
+    
